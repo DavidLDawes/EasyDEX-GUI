@@ -1,0 +1,54 @@
+stages:
+- build
+- deploy
+- test
+variables:
+  AGAMA_ARTIFACT: build.tar.gz
+  DOCKER_DRIVER: overlay2
+
+
+build:
+  image: asherd/agama-builder:windows
+  stage: build
+  script:
+  - cd react
+  - npm install && npm install # modules are not building once fetched. Running npm install again to build them while issue is fixed.
+  - npm run build
+  - tar -czf $AGAMA_ARTIFACT build
+  - mv build.tar.gz ..
+  artifacts:
+    paths:
+    - build.tar.gz
+    expire_in: 1 week
+
+
+deploy:
+  stage: deploy
+  image: google/cloud-sdk:alpine
+  dependencies:
+  - build
+  script:
+  - echo "$AUTH_KEY" > AUTH_KEY.json
+  - gcloud auth activate-service-account --key-file AUTH_KEY.json
+  - gsutil cp $AGAMA_ARTIFACT $STAGING/EasyDEX-GUI/$CI_COMMIT_REF_NAME/
+  - curl -X POST -F token=$CI_JOB_TOKEN --form ref=$CI_COMMIT_REF_NAME https://gitlab.com/api/v4/projects/8018592/trigger/pipeline
+
+
+code_quality:
+  image: docker:stable
+  allow_failure: true
+  services:
+  - docker:stable-dind
+  script:
+  - export SP_VERSION=$(echo "$CI_SERVER_VERSION" | sed 's/^\([0-9]*\)\.\([0-9]*\).*/\1-\2-stable/')
+  - docker run
+      --env SOURCE_CODE="$PWD"
+      --volume "$PWD":/code
+      --volume /var/run/docker.sock:/var/run/docker.sock
+      "registry.gitlab.com/gitlab-org/security-products/codequality:$SP_VERSION" /code
+  artifacts:
+    paths: [gl-code-quality-report.json]
+
+
+
+

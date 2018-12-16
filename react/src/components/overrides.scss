@@ -10,6 +10,14 @@
   background: #f3f4f5;
 }
 
+.page-main-dark {
+  background: #252526;
+}
+
+.page-darkmode {
+  background: #252526;
+}
+
 #kmd_header_button {
   button {
     margin-right: 5px;
@@ -160,6 +168,10 @@ select{
   background: #f3f4f5;
 }
 
+.backround-gray-dark {
+  background: #252526;
+}
+
 .table-striped {
   > tbody {
     > tr.hover--none {
@@ -261,6 +273,9 @@ select{
 #section-iguana-wallet-settings {
   > .row {
     background: #f3f4f5;
+  }
+  > .row-dark {
+    background: #252526;
   }
 }
 
@@ -377,3 +392,50 @@ select{
   position: fixed;
   z-index: 99;
 }
+
+.full-width {
+  width: 100%;
+}
+
+.navbar-toolbar .dropdown-menu:not(.dropdown-menu-media) {
+  overflow-y: auto;
+}
+
+.kmd-mobile-icon {
+  display: none;
+}
+
+.site-navbar .navbar-brand-logo.hidden-lg {
+  display: none;
+}
+
+.blur-sensitive-data {
+  .blur {
+    filter: blur(4px);
+  }
+}
+
+label,
+button,
+.toggle-label,
+.placeholder-label,
+.addcoin-shortcut,
+.floating-label,
+.icon {
+  user-select: none;
+}
+
+.kv-content {
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.overflow-x {
+  overflow-x: auto;
+}
+
+.form-material .control-label.bold,
+.bold {
+  font-weight: 700;
+}
+

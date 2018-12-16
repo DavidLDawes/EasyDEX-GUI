@@ -1,11 +1,18 @@
 import React from 'react';
 import ReactTooltip from 'react-tooltip';
-import { translate } from '../../../translate/translate';
+import translate from '../../../translate/translate';
 import ReactTable from 'react-table';
 import TablePaginationRenderer from './pagination';
-import { formatValue } from '../../../util/formatValue';
+import { formatValue } from 'agama-wallet-lib/src/utils';
 import Config from '../../../config';
 import Spinner from '../spinner/spinner';
+import MiningButton from './walletsData.miningButton';
+
+const kvCoins = {
+  'KV': true,
+  'BEER': true,
+  'PIZZA': true,
+};
 
 export const TxConfsRender = function(confs) {
   if (Number(confs) > -1) {
@@ -26,12 +33,12 @@ export const TxConfsRender = function(confs) {
   }
 }
 
-export const AddressTypeRender = function() {
+export const AddressTypeRender = function(tx) {
   return (
     <span>
-      <span className="label label-default">
-        <i className="icon fa-eye"></i>&nbsp;
-        { translate('IAPI.PUBLIC_SM') }
+      <span className={!tx.memo ? "label label-default" : "label label-dark"}>
+        <i className={ 'icon fa-eye' + (!tx.memo ? '' : '-slash')}></i>&nbsp;
+        { !tx.memo ? translate('IAPI.PUBLIC_SM') : translate('IAPI.PRIVATE_SM') }
       </span>
     </span>
   );
@@ -52,7 +59,6 @@ export const AddressRender = function(tx) {
   if (!tx.address) {
     return (
       <span>
-        <i className="icon fa-bullseye"></i>&nbsp;
         <span className="label label-dark">
           { translate('DASHBOARD.ZADDR_NOT_LISTED') }
         </span>
@@ -60,13 +66,13 @@ export const AddressRender = function(tx) {
     );
   }
 
-  return tx.address;
+  return (<span className="blur">{ tx.address }</span>);
 };
 
 export const AddressItemRender = function(address, type, amount, coin) {
   return (
     <li
-      key={address}
+      key={ address }
       className={ address === this.state.currentAddress ? 'selected' : '' }>
       <a onClick={ () => this.updateAddressSelection(address) }>
         <i className={ 'icon fa-eye' + (type === 'public' ? '' : '-slash') }></i>&nbsp;&nbsp;
@@ -119,7 +125,8 @@ export const AddressListRender = function() {
   }
 };
 
-export const TxTypeRender = function(category) {
+export const TxTypeRender = function(tx) {
+  let category = tx.category || tx.type;
   if (category === 'send' ||
       category === 'sent') {
     return (
@@ -127,8 +134,10 @@ export const TxTypeRender = function(category) {
         <i className="icon fa-arrow-circle-left"></i> <span>{ translate('DASHBOARD.OUT') }</span>
       </span>
     );
-  } else if (category === 'receive' ||
-      category === 'received') {
+  } else if (
+    category === 'receive' ||
+    category === 'received'
+  ) {
     return (
       <span className="label label-success">
         <i className="icon fa-arrow-circle-right"></i> <span>{ translate('DASHBOARD.IN') } &nbsp; &nbsp;</span>
@@ -140,10 +149,22 @@ export const TxTypeRender = function(category) {
         <i className="icon fa-cogs"></i> <span>{ translate('DASHBOARD.MINED') }</span>
       </span>
     );
+  } else if (category === 'stake') {
+    return (
+      <span className="label label-info">
+        <span> { translate('DASHBOARD.STAKE') } </span>
+      </span>
+    );
+  } else if (category === 'mint') {
+    return (
+      <span>
+        <i className="icon fa-money"></i> <span>{ translate('DASHBOARD.MINT') }</span>
+      </span>
+    );
   } else if (category === 'immature') {
     return (
       <span>
-        <i className="icon fa-clock-o"></i> <span>{ translate('DASHBOARD.IMMATURE') }</span>
+        <i className="icon fa-clock-o"></i> <span>{ translate('DASHBOARD.IMMATURE') }</span> <span>{ ' ' + '(' + tx.blockstomaturity + ')'}</span>
       </span>
     );
   } else if (category === 'unknown') {
@@ -177,7 +198,7 @@ export const TxAmountRender = function(tx) {
     return (
       <span>
         <span data-tip={ tx.amount * _amountNegative }>
-          { Math.abs(tx.interest) !== Math.abs(tx.amount) ? (formatValue(tx.amount) * _amountNegative || translate('DASHBOARD.UNKNOWN')) : '' }
+          { Math.abs(tx.interest) !== Math.abs(tx.amount) ? (formatValue(tx.amount) * _amountNegative === null ? translate('DASHBOARD.UNKNOWN') : tx.amount * _amountNegative) : '' }
           { tx.interest &&
             <span
               className="tx-interest"
@@ -192,13 +213,24 @@ export const TxAmountRender = function(tx) {
         <ReactTooltip
           effect="solid"
           className="text-left" />
+        { tx.vinLen > tx.vinMaxLen &&
+          <span>
+            <i
+              className="icon fa-question tx-history-vin-len-err"
+              data-tip={ translate('INDEX.SPV_TX_VIN_COUNT_WARN') }
+              data-html={ true }></i>
+            <ReactTooltip
+              effect="solid"
+              className="text-left" />
+          </span>
+        }
       </span>
     );
   }
 
   return (
     <span>
-      { Math.abs(tx.interest) !== Math.abs(tx.amount) ? (tx.amount * _amountNegative || translate('DASHBOARD.UNKNOWN')) : '' }
+      { Math.abs(tx.interest) !== Math.abs(tx.amount) ? (tx.amount * _amountNegative === null ? translate('DASHBOARD.UNKNOWN') : tx.amount * _amountNegative) : '' }
       { tx.interest &&
         <span
           className="tx-interest"
@@ -208,6 +240,17 @@ export const TxAmountRender = function(tx) {
         <ReactTooltip
           effect="solid"
           className="text-left" />
+      }
+      { tx.vinLen > tx.vinMaxLen &&
+        <span>
+          <i
+            className="icon fa-question tx-history-vin-len-err"
+            data-tip={ translate('INDEX.SPV_TX_VIN_COUNT_WARN') }
+            data-html={ true }></i>
+          <ReactTooltip
+            effect="solid"
+            className="text-left" />
+        </span>
       }
     </span>
   );
@@ -226,7 +269,7 @@ export const TxHistoryListRender = function() {
       previousText={ translate('INDEX.PREVIOUS_PAGE') }
       showPaginationBottom={ this.state.showPagination }
       pageSize={ this.state.pageSize }
-      defaultSortMethod={ this.tableSorting }
+      defaultSortMethod={ this.defaultSorting }
       defaultSorted={[{ // default sort
         id: 'timestamp',
         desc: true,
@@ -239,7 +282,8 @@ export const WalletsDataRender = function() {
   return (
     <span>
       <div id="edexcoin_dashboardinfo">
-        { (this.displayClaimInterestUI() === 777 || this.displayClaimInterestUI() === -777) &&
+        { (this.displayClaimInterestUI() === 777 ||
+          this.displayClaimInterestUI() === -777) &&
           <div className="col-xs-12 margin-top-20 backround-gray">
             <div className="panel no-margin">
               <div>
@@ -289,7 +333,17 @@ export const WalletsDataRender = function() {
                         className="icon fa-refresh manual-txhistory-refresh pointer"
                         onClick={ this.refreshTxHistory }></i>
                     }
-                    <h4 className="panel-title">{ translate('INDEX.TRANSACTION_HISTORY') }</h4>
+                    <h4 className="panel-title">{ !this.state.kvView ? translate('INDEX.TRANSACTION_HISTORY') : translate('KV.KV_HISTORY') }</h4>
+                    { this.props.ActiveCoin.mode === 'spv' &&
+                      Config.experimentalFeatures &&
+                      kvCoins[this.props.ActiveCoin.coin] &&
+                      <button
+                        type="button"
+                        className="btn btn-default btn-switch-kv"
+                        onClick={ this.toggleKvView }>
+                        { !this.state.kvView ? translate('KV.KV_VIEW') : translate('KV.TX_VIEW') }
+                      </button>
+                    }
                   </header>
                   <div className="panel-body">
                     <div className="row padding-bottom-30 padding-top-10">
@@ -298,11 +352,158 @@ export const WalletsDataRender = function() {
                         this.props.ActiveCoin.txhistory !== 'connection error' &&
                         this.props.ActiveCoin.txhistory !== 'connection error or incomplete data' &&
                         this.props.ActiveCoin.txhistory !== 'cant get current height' &&
-                        <div className="col-sm-4 search-box">
-                          <input
-                            className="form-control"
-                            onChange={ e => this.onSearchTermChange(e.target.value) }
-                            placeholder={ translate('DASHBOARD.SEARCH') } />
+                        !this.state.kvView &&
+                          <div className="search-box">
+                            <button
+                              type="button"
+                              className="btn btn-primary waves-effect waves-light col-sm-4"
+                              data-tip={ this.state.filterMenuOpen ? translate('FILTER.FILTER_DESC_CONTRACT') : translate('FILTER.FILTER_DESC_EXPAND') }
+                              onClick={ this.toggleFilterMenuOpen }>{ translate('FILTER.FILTER_OPTIONS') }</button>
+                            <input
+                              className="form-control"
+                              onChange={ e => this.onSearchTermChange(e.target.value) }
+                              placeholder={ translate('DASHBOARD.SEARCH') } />
+                          </div>
+                      }
+                      { this.props.ActiveCoin.txhistory !== 'loading' &&
+                        this.props.ActiveCoin.txhistory !== 'connection error' &&
+                        this.props.ActiveCoin.txhistory !== 'connection error or incomplete data' &&
+                        this.props.ActiveCoin.txhistory !== 'cant get current height' &&
+                        (this.props.ActiveCoin.coin === 'VRSC' || this.props.ActiveCoin.coin === 'VERUSTEST') &&
+                        <div className="row">
+                          <div className="col-sm-4">
+                            <button
+                              type="button"
+                              className={this.props.ActiveCoin.mode === 'spv' ? 'hide' : "btn btn-dark waves-effect waves-light margin-top-5"}
+                              data-tip={ this.state.showMiningButton ? translate('DASHBOARD.MINING_DESC_CONTRACT') : translate('DASHBOARD.MINING_DESC_EXPAND') }
+                              onClick={ () => this.toggleMiningButton() }><i className="icon fa-cogs"></i>{ this.state.showMiningButton ? translate('DASHBOARD.CONTRACT_MINING') : translate('DASHBOARD.EXPAND_MINING') }</button>
+                                <ReactTooltip
+                                effect="solid"
+                                className="text-left" />
+                          </div>
+                        </div>
+                      }  
+                      { this.props.ActiveCoin.txhistory !== 'loading' &&
+                        this.props.ActiveCoin.txhistory !== 'connection error' &&
+                        this.props.ActiveCoin.txhistory !== 'connection error or incomplete data' &&
+                        this.props.ActiveCoin.txhistory !== 'cant get current height' &&
+                        this.state.showMiningButton && 
+                        this.props.ActiveCoin.mode !== 'spv' &&
+                        <MiningButton />
+                      }
+                      { this.props.ActiveCoin.txhistory !== 'loading' &&
+                        this.props.ActiveCoin.txhistory !== 'connection error' &&
+                        this.props.ActiveCoin.txhistory !== 'connection error or incomplete data' &&
+                        this.props.ActiveCoin.txhistory !== 'cant get current height' &&
+                        this.state.filterMenuOpen && 
+                        <div className="filter-options-wrapper">
+                          <div className="filter-option">
+                            <span className = {this.props.ActiveCoin.mode === 'spv' ? 'hide' : "filter-option-child"}>
+                              <div>
+                              { translate('FILTER.PRIVATE') }
+                              </div>
+                              <div>
+                                <label className="switch">
+                                <input
+                                    type="checkbox"
+                                    checked={ this.state.filterPrivateTx } />
+                                    <div
+                                    className="slider"
+                                    onClick={ this.toggleFilterPrivateTx }></div>
+                                </label>
+                              </div>
+                            </span>
+                            <span className = {this.props.ActiveCoin.mode === 'spv' ? 'hide' : "filter-option-child"}>
+                              <div>
+                              { translate('FILTER.PUBLIC') }
+                              </div>
+                              <div>
+                                <label className="switch">
+                                <input
+                                    type="checkbox"
+                                    checked={ this.state.filterPublicTx } />
+                                    <div
+                                    className="slider"
+                                    onClick={ this.toggleFilterPublicTx }></div>
+                                </label>
+                              </div>
+                            </span>
+                            <span className = {this.props.ActiveCoin.mode === 'spv' ? 'hide' : "filter-option-child"}>
+                              <div>
+                              { translate('FILTER.IMMATURE') }
+                              </div>
+                              <div>
+                                <label className="switch">
+                                <input
+                                    type="checkbox"
+                                    checked={ this.state.filterImmatureTx } />
+                                    <div
+                                    className="slider"
+                                    onClick={ this.toggleFilterImmatureTx }></div>
+                                </label>
+                              </div>
+                            </span>
+                            <span className = {this.props.ActiveCoin.mode === 'spv' ? 'hide' : "filter-option-child"}>
+                              <div>
+                              { translate('FILTER.MATURE') }
+                              </div>
+                              <div>
+                                <label className="switch">
+                                <input
+                                    type="checkbox"
+                                    checked={ this.state.filterMatureTx } />
+                                    <div
+                                    className="slider"
+                                    onClick={ this.toggleFilterMatureTx }></div>
+                                </label>
+                              </div>
+                            </span>
+                            <span className = "filter-option-child">
+                              <div>
+                              { translate('FILTER.SENT') }
+                              </div>
+                              <div>
+                                <label className="switch">
+                                <input
+                                    type="checkbox"
+                                    checked={ this.state.filterSentTx } />
+                                    <div
+                                    className="slider"
+                                    onClick={ this.toggleFilterSentTx }></div>
+                                </label>
+                              </div>
+                            </span>
+                            <span className = "filter-option-child">
+                              <div>
+                              { translate('FILTER.RECEIVED') }
+                              </div>
+                              <div>
+                                <label className="switch">
+                                <input
+                                    type="checkbox"
+                                    checked={ this.state.filterReceivedTx } />
+                                    <div
+                                    className="slider"
+                                    onClick={ this.toggleFilterReceivedTx }></div>
+                                </label>
+                              </div>
+                            </span>
+                            <span className = {this.props.ActiveCoin.mode === 'native' ? 'hide' : "filter-option-child"}>
+                              <div>
+                              { translate('FILTER.SELF') }
+                              </div>
+                              <div>
+                                <label className="switch">
+                                <input
+                                    type="checkbox"
+                                    checked={ this.state.filterSelfTx } />
+                                    <div
+                                    className="slider"
+                                    onClick={ this.toggleFilterSelfTx }></div>
+                                </label>
+                              </div>
+                            </span>
+                          </div>
                         </div>
                       }
                     </div>

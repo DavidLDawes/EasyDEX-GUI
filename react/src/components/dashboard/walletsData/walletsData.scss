@@ -1,6 +1,7 @@
 .search-box {
   float: right;
   padding-right: 0;
+  display: flex;
 }
 .breadcrumb--native {
   top: 0;
@@ -44,7 +45,7 @@
   }
   .colum--direction {
     width: 40px !important;
-    flex: 40 0 auto !important;
+    flex: 100 0 auto !important;
     padding-right: 10px;
   }
   .colum--txinfo {
@@ -109,4 +110,35 @@
   width: 44px;
   display: block;
   margin: 0 auto;
+}
+
+.tx-history-vin-len-err {
+  background: #FF6600;
+  color: #fff;
+  border-radius: 50%;
+  padding: 1px 4px;
+  margin-left: 10px;
+}
+
+.filter-options-wrapper {
+  padding-top:5px;
+}
+
+.filter-options-label {
+  text-align: center;
+}
+
+.filter-option {
+  text-align: center;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.filter-option-child {
+  margin: auto;
+  float: left;
+}
+
+.stakemineinput {
+  width: 115px
 }

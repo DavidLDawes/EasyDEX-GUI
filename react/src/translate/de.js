@@ -783,6 +783,8 @@ export const LANG_DE = {
     'USD': 'US-Dollar (USD)'
   },
   'ASSETCHAINS': {
+    'VRSC': 'Verus',
+    'VERUSTEST': 'Verus Testnet',
     'BET': 'BET (BET)',
     'BOTS': 'BOTS (BOTS)',
     'CEAL': 'CEAL NET (CEAL)',
@@ -811,5 +813,8 @@ export const LANG_DE = {
     'TRADE_HISTORY_SM': 'Handelsverlauf',
     'ELECTRUM_MODE': 'Electrum-Modus',
     'NATIVE_MODE': 'Nativer Modus'
+  },
+  'RECEIVE': {
+      'DISPLAY_ALL_ADDR': 'Zeigen sie alle adressen an.',
   }
 }

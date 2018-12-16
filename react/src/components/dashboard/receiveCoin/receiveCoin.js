@@ -15,7 +15,7 @@ import {
   ReceiveCoinRender,
   _ReceiveCoinTableRender,
 } from './receiveCoin.render';
-import { translate } from '../../../translate/translate';
+import translate from '../../../translate/translate';
 
 // TODO: implement balance/interest sorting
 
@@ -102,7 +102,7 @@ class ReceiveCoin extends React.Component {
         e.srcElement &&
         e.srcElement.offsetParent &&
         e.srcElement.offsetParent.className.indexOf('dropdown') === -1 &&
-      (e.srcElement.offsetParent && e.srcElement.offsetParent.className.indexOf('dropdown') === -1)) {
+        (e.srcElement.offsetParent && e.srcElement.offsetParent.className.indexOf('dropdown') === -1)) {
       this.setState({
         openDropMenu: false,
         toggledAddressMenu:
@@ -158,7 +158,12 @@ class ReceiveCoin extends React.Component {
 
     if (this.props.balance &&
         this.props.balance.total) {
-      _balance = this.props.balance.total;
+      if (this.props.balance.immature) {
+        _balance = this.props.balance.total - this.props.balance.immature;
+      }
+      else {
+        _balance = this.props.balance.total;
+      }
     }
 
     return _balance;
@@ -183,8 +188,8 @@ class ReceiveCoin extends React.Component {
           }
 
           if (!this.state.toggleIsMine &&
-            !address.canspend &&
-            address.address.substring(0, 2) !== 'zc') {
+              !address.canspend &&
+              (address.address.substring(0, 2) !== 'zc') && (address.address.substring(0, 2) !== 'zs')) {
             items.pop();
           }
         } else {
@@ -194,7 +199,7 @@ class ReceiveCoin extends React.Component {
 
           if (!this.state.toggleIsMine &&
             !address.canspend &&
-            address.address.substring(0, 2) !== 'zc') {
+            (address.address.substring(0, 2) !== 'zc' && address.address.substring(0, 2) !== 'zs')) {
             items.pop();
           }
         }
@@ -225,8 +230,6 @@ class ReceiveCoin extends React.Component {
   }
 
   render() {
-    // TODO activeSection === 'receive' should be removed when native mode is fully merged
-    // into the rest of the components
     if (this.props &&
        (this.props.receive || this.props.activeSection === 'receive')) {
       return ReceiveCoinRender.call(this);
