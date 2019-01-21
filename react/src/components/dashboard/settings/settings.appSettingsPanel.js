@@ -127,7 +127,11 @@ class AppSettingsPanel extends React.Component {
         }
       } else {
         for (let keyChild in _appSettings[key]) {
-          _appSettingsPristine[key][keyChild] = this.state.appConfigSchema[key][keyChild].type === 'number' ? Number(_appSettings[key][keyChild]) : _appSettings[key][keyChild];
+          if (this.state.appConfigSchema[key][keyChild] == null) {
+            _appSettingsPristine[key][keyChild] = false;
+          } else {
+            _appSettingsPristine[key][keyChild] = this.state.appConfigSchema[key][keyChild].type === 'number' ? Number(_appSettings[key][keyChild]) : _appSettings[key][keyChild];
+          }
         }
       }
     }
