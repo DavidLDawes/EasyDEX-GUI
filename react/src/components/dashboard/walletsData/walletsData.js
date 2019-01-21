@@ -688,10 +688,8 @@ class WalletsData extends React.Component {
         itemsListColumns: this.generateItemsListColumns(_txhistory.length),
         reconnectInProgress: false,
       });
-    }
-
-    if (_txhistory &&
-        _txhistory === 'no data') {
+    } else if (_txhistory &&
+        _txhistory.length === 0) {
       _stateChange = Object.assign({}, _stateChange, {
         itemsList: 'no data',
         reconnectInProgress: false,
@@ -716,6 +714,12 @@ class WalletsData extends React.Component {
       if (!this.state.reconnectInProgress) {
         this.spvAutoReconnect();
       }
+    }
+    else {
+      _stateChange = Object.assign({}, _stateChange, {
+        itemsList: 'unknown error',
+        reconnectInProgress: false,
+      });
     }
 
     this.setState(Object.assign({}, _stateChange));
@@ -813,6 +817,14 @@ class WalletsData extends React.Component {
           <td
             colSpan="7"
             className="table-cell-offset-16">{ translate('INDEX.NO_DATA') }</td>
+        </tr>
+      );
+    } else if (this.state.itemsList === 'unknown error') {
+      return (
+        <tr className="hover--none">
+          <td
+            colSpan="7"
+            className="table-cell-offset-16">{ translate('INDEX.UNKNOWN_ERROR') }</td>
         </tr>
       );
     } else if (this.state.itemsList === 'connection error') {

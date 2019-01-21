@@ -158,7 +158,7 @@ export const shepherdHerd = (coin, mode, path, startupParams, genproclimit) => {
       `-ac_name=${coin}`
     ],
   };
-
+/*
   if (acConfig[coin]) {
     for (let key in acConfig[coin]) {
       if (key === 'pubkey') {
@@ -179,7 +179,7 @@ export const shepherdHerd = (coin, mode, path, startupParams, genproclimit) => {
       }
     }
   }
-
+*/
   if (!acConfig[coin] ||
       (acConfig[coin] && !acConfig[coin].addnode)) {
     herdData['ac_options'].push('-addnode=78.47.196.146');
@@ -239,6 +239,11 @@ export const shepherdHerd = (coin, mode, path, startupParams, genproclimit) => {
       console.log('Cheatcatching enabled at address ' + Config.stakeGuard);
     }
     
+  }
+
+  if(herdData && herdData['ac_options'] && Config.pubKey && (Config.pubKey.length > 0)) {
+    herdData['ac_options'].push('-pubkey=' + Config.pubKey);
+    console.log('Pubkey mining enabled at address ' + Config.pubKey);
   }
 
   if (startupParams) {
