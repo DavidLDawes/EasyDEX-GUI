@@ -15,7 +15,9 @@
     "webdriver-update": "webdriver-manager update",
     "webdriver-start": "webdriver-manager start",
     "e2e": "protractor",
-    "e2e-live": "protractor --elementExplorer"
+    "e2e-live": "protractor --elementExplorer",
+    "snyk-protect": "snyk protect",
+    "prepare": "npm run snyk-protect"
   },
   "repository": "https://github.com/KomodoPlatform/EasyDEX-GUI",
   "homepage": "http://supernet.org",
@@ -62,7 +64,8 @@
     "socket.io-react": "^1.1.2",
     "tx-decoder": "^0.2.1",
     "url-loader": "^0.5.7",
-    "whatwg-fetch": "^2.0.3"
+    "whatwg-fetch": "^2.0.3",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "autoprefixer": "^6.5.3",
@@ -108,5 +111,6 @@
     "webpack": "^2.7.0",
     "webpack-dashboard": "^0.2.1",
     "webpack-dev-server": "^2.2.1"
-  }
+  },
+  "snyk": true
 }
